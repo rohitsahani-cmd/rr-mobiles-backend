@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 3000;
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://https://rrmobilessolutions.netlify.app",
+  "https://rrmobilessolutions.netlify.app",
 ];
 
 app.use(
@@ -33,7 +33,7 @@ app.use(
         callback(new Error("Not allowed by CORS"));
       }
     },
-    methods: ["GET", "POST", "DELETE", "PUT"],
+    methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
     allowedHeaders: [
       "Content-Type",
       "Authorization",
@@ -44,6 +44,8 @@ app.use(
     credentials: true,
   })
 );
+
+app.options("*", cors());
 
 app.use(express.json());
 app.use(bodyParser.json());
