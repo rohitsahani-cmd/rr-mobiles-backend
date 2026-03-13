@@ -18,7 +18,7 @@ const addProduct = async (req, res) => {
       });
     }
 
-    const imageUrl = `https://rr-mobiles-backend-1.onrender.com/uploads/${req.file.filename}`;
+const imageUrl = `https://rr-mobiles-backend-1.onrender.com/uploads/${req.file.filename}`;
 
     const newProduct = new Product({
       name,
