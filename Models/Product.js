@@ -14,6 +14,14 @@ const ProductSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    quantity: {
+  type: Number,
+  required: true,
+  default: 0,
+},inStock: {
+  type: Boolean,
+  default: true,
+},
     category: {
       type: String,
       required: true,
@@ -28,7 +36,8 @@ const ProductSchema = new mongoose.Schema(
         "Chargers",
         "Mobile Case",
         "Screen Guard",
-        "Laptop Skins"
+        "Laptop Skins",
+        "Mobile Skins"
       ],
     },
     image: {

@@ -2,12 +2,12 @@ const Product = require("../Models/Product");
 
 const addProduct = async (req, res) => {
   try {
-    const { name, price, description, category } = req.body;
+    const { name, price, description, category, quantity } = req.body;
 
-    if (!name || !price || !description || !category) {
+    if (!name || !price || !description || !category || quantity === undefined) {
       return res.status(400).json({
         success: false,
-        message: "Name, price, description, and category are required",
+        message: "Name, price, description, category, and quantity are required",
       });
     }
 
@@ -18,14 +18,15 @@ const addProduct = async (req, res) => {
       });
     }
 
-    const image = `https://rr-mobiles-backend.onrender.com/uploads/${req.file.filename}`;
+    const imageUrl = `https://rr-mobiles-backend-1.onrender.com/uploads/${req.file.filename}`;
 
     const newProduct = new Product({
       name,
       price,
       description,
       category,
-      image,
+      image: imageUrl,
+      quantity: Number(quantity),
     });
 
     await newProduct.save();

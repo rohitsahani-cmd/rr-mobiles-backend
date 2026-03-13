@@ -14,7 +14,23 @@ const UserSchema = new Schema({
   password: {
     type: String,
     required: true,
-  },
+  },trackingId: {
+  type: String,
+  default: "",
+},
+resetPasswordToken: { type: String },
+resetPasswordExpires: { type: Date },
+isVerified: { type: Boolean, default: false },
+otp: { type: String, default: "" },
+otpExpires: { type: Date },
+courierPartner: {
+  type: String,
+  default: "",
+},
+
+estimatedDelivery: {
+  type: Date,
+},
   role: {
     type: String,
     enum: ["user", "admin"],
@@ -29,5 +45,6 @@ const UserSchema = new Schema({
     street: { type: String, default: "" },
   },
 });
+
 
 module.exports = mongoose.model("users", UserSchema);

@@ -35,21 +35,44 @@ const OrderSchema = new mongoose.Schema(
     },
     deliveryCharge: {
       type: Number,
-      required: true,
       default: 49,
     },
+    trackingId: { type: String, default: "" },      // AWB / tracking number
+courierPartner: { type: String, default: "" },
+estimatedDelivery: { type: Date },
+shiprocketOrderId: { type: String, default: "" },
+trackingHistory: [
+  {
+    status: String,
+    location: String,
+    time: Date,
+  }
+],
     total: {
       type: Number,
       required: true,
     },
-    orderStatus: {
-      type: String,
-      enum: ["Pending", "Confirmed", "Shipped", "Delivered", "Cancelled"],
-      default: "Pending",
-    },
     paymentMethod: {
       type: String,
+      enum: ["COD", "ONLINE"],
       default: "COD",
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Paid", "Failed"],
+      default: "Pending",
+    },
+   orderStatus: {
+  type: String,
+  default: "Pending",
+},
+    razorpayOrderId: {
+      type: String,
+      default: "",
+    },
+    razorpayPaymentId: {
+      type: String,
+      default: "",
     },
   },
   { timestamps: true }
