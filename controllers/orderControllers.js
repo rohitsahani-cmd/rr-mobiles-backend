@@ -82,16 +82,37 @@ const placeOrder = async (req, res) => {
       });
     }
 
-    // =========================
-    // CHECK STOCK FIRST
-    // =========================
+    if (!paymentMethod || !["COD", "ONLINE"].includes(paymentMethod)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment method",
+      });
+    }
+
+    if (paymentMethod === "ONLINE") {
+      if (!razorpayOrderId || !razorpayPaymentId) {
+        return res.status(400).json({
+          success: false,
+          message: "Online payment details are missing",
+        });
+      }
+
+      if (paymentStatus !== "Paid") {
+        return res.status(400).json({
+          success: false,
+          message: "Online payment is not completed",
+        });
+      }
+    }
+
+    // Check stock
     for (const item of items) {
       const product = await Product.findById(item.productId);
 
       if (!product) {
         return res.status(404).json({
           success: false,
-          message: `Product not found`,
+          message: "Product not found",
         });
       }
 
@@ -112,8 +133,8 @@ const placeOrder = async (req, res) => {
     }
 
     if (paymentMethod === "ONLINE") {
-      finalPaymentStatus = paymentStatus === "Paid" ? "Paid" : "Pending";
-      finalOrderStatus = paymentStatus === "Paid" ? "Confirmed" : "Pending";
+      finalPaymentStatus = "Paid";
+      finalOrderStatus = "Confirmed";
     }
 
     const newOrder = new Order({
@@ -132,9 +153,7 @@ const placeOrder = async (req, res) => {
 
     await newOrder.save();
 
-    // =========================
-    // REDUCE STOCK AFTER ORDER SAVED
-    // =========================
+    // Reduce stock after saving order
     for (const item of items) {
       const product = await Product.findById(item.productId);
       product.quantity -= item.quantity;
