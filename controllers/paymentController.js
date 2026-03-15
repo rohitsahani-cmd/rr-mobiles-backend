@@ -13,8 +13,15 @@ const createOrder = async (req, res) => {
   try {
     const { amount } = req.body;
 
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid amount is required",
+      });
+    }
+
     const options = {
-      amount: amount * 100, // convert to paisa
+      amount: Math.round(Number(amount) * 100),
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
     };

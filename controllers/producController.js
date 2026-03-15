@@ -1,4 +1,20 @@
 const Product = require("../Models/Product");
+const cloudinary = require("../config/Cloudinary");
+const streamifier = require("streamifier");
+
+const uploadFromBuffer = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "rr-mobiles-products" },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+
+    streamifier.createReadStream(buffer).pipe(stream);
+  });
+};
 
 const addProduct = async (req, res) => {
   try {
@@ -18,15 +34,16 @@ const addProduct = async (req, res) => {
       });
     }
 
-const imageUrl = `https://rr-mobiles-backend-1.onrender.com/uploads/${req.file.filename}`;
+    const uploadedImage = await uploadFromBuffer(req.file.buffer);
 
     const newProduct = new Product({
       name,
       price,
       description,
       category,
-      image: imageUrl,
+      image: uploadedImage.secure_url,
       quantity: Number(quantity),
+      inStock: Number(quantity) > 0,
     });
 
     await newProduct.save();
