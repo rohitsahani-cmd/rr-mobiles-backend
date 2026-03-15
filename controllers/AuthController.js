@@ -6,15 +6,40 @@ const crypto = require("crypto");
 const { Resend } = require("resend");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// ================= MAIL HELPERS =================
+// ================= COMMON HELPERS =================
 const generateOtp = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-const sendOtpEmail = async (email, name, otp) => {
-  const { error } = await resend.emails.send({
+const createToken = (payload, expiresIn = "1d") => {
+  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
+};
+
+const sendEmailWithResend = async ({ to, subject, html }) => {
+  console.log("RESEND API KEY EXISTS:", !!process.env.RESEND_API_KEY);
+  console.log("Sending email to:", to);
+
+  const { data, error } = await resend.emails.send({
     from: "RR Mobiles <onboarding@resend.dev>",
+    to,
+    subject,
+    html,
+  });
+
+  console.log("RESEND DATA:", data);
+  console.log("RESEND ERROR:", error);
+
+  if (error) {
+    throw new Error(error.message || "Failed to send email");
+  }
+
+  return data;
+};
+
+const sendOtpEmail = async (email, name, otp) => {
+  return sendEmailWithResend({
     to: email,
     subject: "Verify your account - OTP",
     html: `
@@ -27,15 +52,10 @@ const sendOtpEmail = async (email, name, otp) => {
       </div>
     `,
   });
-
-  if (error) {
-    throw new Error(error.message || "Failed to send OTP email");
-  }
 };
 
 const sendResetEmail = async (email, resetLink) => {
-  const { error } = await resend.emails.send({
-    from: "RR Mobiles <onboarding@resend.dev>",
+  return sendEmailWithResend({
     to: email,
     subject: "Password Reset",
     html: `
@@ -45,10 +65,6 @@ const sendResetEmail = async (email, resetLink) => {
       <p>This link expires in 15 minutes.</p>
     `,
   });
-
-  if (error) {
-    throw new Error(error.message || "Failed to send reset email");
-  }
 };
 
 // ================= SIGNUP =================
@@ -97,7 +113,7 @@ const signup = async (req, res) => {
     try {
       await sendOtpEmail(email, name, otp);
     } catch (mailError) {
-      console.log("OTP mail send error:", mailError);
+      console.log("OTP mail send error full:", mailError);
 
       return res.status(500).json({
         success: false,
@@ -114,7 +130,7 @@ const signup = async (req, res) => {
     console.log("Signup error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message || "Signup failed",
     });
   }
 };
@@ -174,7 +190,7 @@ const verifySignupOtp = async (req, res) => {
     console.log("Verify OTP error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message || "OTP verification failed",
     });
   }
 };
@@ -217,7 +233,7 @@ const resendSignupOtp = async (req, res) => {
     try {
       await sendOtpEmail(user.email, user.name, otp);
     } catch (mailError) {
-      console.log("Resend OTP mail error:", mailError);
+      console.log("Resend OTP mail error full:", mailError);
 
       return res.status(500).json({
         success: false,
@@ -233,14 +249,12 @@ const resendSignupOtp = async (req, res) => {
     console.log("Resend OTP error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message || "Resend OTP failed",
     });
   }
 };
 
 // ================= GOOGLE LOGIN =================
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
 const googleLogin = async (req, res) => {
   try {
     const { token } = req.body;
@@ -277,10 +291,9 @@ const googleLogin = async (req, res) => {
       await user.save();
     }
 
-    const jwtToken = jwt.sign(
+    const jwtToken = createToken(
       { _id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      "7d"
     );
 
     return res.status(200).json({
@@ -335,10 +348,9 @@ const login = async (req, res) => {
       });
     }
 
-    const token = jwt.sign(
+    const token = createToken(
       { email: user.email, id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      "1d"
     );
 
     return res.status(200).json({
@@ -356,7 +368,7 @@ const login = async (req, res) => {
     console.log("Login error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message || "Login failed",
     });
   }
 };
@@ -394,11 +406,12 @@ const forgotPassword = async (req, res) => {
     try {
       await sendResetEmail(user.email, resetLink);
     } catch (mailError) {
-      console.log("Forgot password mail error:", mailError);
+      console.log("Forgot password mail error full:", mailError);
 
       return res.status(500).json({
         success: false,
-        message: "Could not send password reset email right now. Please try again later.",
+        message:
+          "Could not send password reset email right now. Please try again later.",
       });
     }
 
@@ -410,7 +423,7 @@ const forgotPassword = async (req, res) => {
     console.log("Forgot password error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message || "Forgot password failed",
     });
   }
 };
@@ -456,7 +469,7 @@ const resetPassword = async (req, res) => {
     console.log("Reset password error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message || "Password reset failed",
     });
   }
 };
