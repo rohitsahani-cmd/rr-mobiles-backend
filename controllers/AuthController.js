@@ -384,7 +384,7 @@ const forgotPassword = async (req, res) => {
         success: false,
         message: "User not found",
       });
-    }
+    }//auth
 
     const resetToken = crypto.randomBytes(32).toString("hex");
 
@@ -398,7 +398,7 @@ const forgotPassword = async (req, res) => {
     try {
       await sendResetEmail(user.email, resetLink);
     } catch (mailError) {
-      console.log("Forgot password mail error:", mailError);
+      console.log("Forgot password mail error:", mailError);//rohith sahani is used
 
       return res.status(500).json({
         success: false,

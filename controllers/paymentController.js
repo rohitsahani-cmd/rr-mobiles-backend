@@ -42,7 +42,7 @@ const createOrder = async (req, res) => {
 };
 
 // ==========================
-// VERIFY PAYMENT
+// VERIFY PAYMENTc 
 // ==========================
 const verifyPayment = async (req, res) => {
   try {

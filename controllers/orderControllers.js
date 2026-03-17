@@ -22,13 +22,13 @@ const saveAddress = async (req, res) => {
       });
     }
 
-    const updatedUser = await UserModel.findByIdAndUpdate(
-      req.user._id,
-      {
-        address: { fullName, phone, pincode, city, state, street },
-      },
-      { new: true }
-    );
+  const updatedUser = await UserModel.findByIdAndUpdate(
+  req.user._id,
+  {
+    address: { fullName, phone, pincode, city, state, street },
+  },
+  { returnDocument: "after" }
+);
 
     return res.status(200).json({
       success: true,
@@ -160,12 +160,11 @@ const placeOrder = async (req, res) => {
       await product.save();
     }
 
-    await UserModel.findByIdAndUpdate(
-      req.user._id,
-      { address },
-      { new: true }
-    );
-
+  await UserModel.findByIdAndUpdate(
+  req.user._id,
+  { address },
+  { returnDocument: "after" }
+);
     return res.status(201).json({
       success: true,
       message: "Order placed successfully",
