@@ -403,7 +403,7 @@ const forgotPassword = async (req, res) => {
       return res.status(500).json({
         success: false,
         message: "Could not send password reset email right now. Please try again later.",
-      });
+      });//error
     }
 
     return res.status(200).json({
