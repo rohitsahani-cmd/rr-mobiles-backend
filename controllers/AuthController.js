@@ -393,7 +393,7 @@ const forgotPassword = async (req, res) => {
 
     await user.save();
 
-    const resetLink = `https://rrmobilessolutions.vercel.app/auth/reset-password/${resetToken}`;
+    const resetLink = `https://rrmobilesolutions.vercel.app/auth/reset-password/${resetToken}`;
 
     try {
       await sendResetEmail(user.email, resetLink);
