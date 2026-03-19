@@ -23,7 +23,7 @@ const PORT = process.env.PORT || 3000;
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://rrmobilesolutions.vercel.app",
+  "https://rrmobilessolutions.vercel.app",
 ];
 
 app.use(
